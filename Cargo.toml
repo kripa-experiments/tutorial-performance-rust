@@ -1,0 +1,14 @@
+[workspace]
+members = [
+    "lab01_nom_parsing",
+    "lab02_id_registry",
+    "lab03_bit_manipulation",
+    "lab04_bytemuck_repr",
+    "lab05_rayon_parallelism",
+    "lab06_data_oriented_design",
+    "lab07_wgpu_basics",
+    "lab08_wgsl_compute",
+    "lab09_wasm_bindgen",
+    "lab10_gpu_atomics"
+]
+resolver = "2"
