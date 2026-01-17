@@ -1,0 +1,76 @@
+MASTER SPECIFICATION: Rust Learning & Derisking Workspace
+Goal: Create a Rust workspace with 10 independent crates ("labs"). Each crate targets a specific tool or architectural pattern required for a high-performance, GPU-accelerated HTN solver.
+Architectural Principle: Focus on low-level performance, data-oriented design, and memory layout. Use minimal logic to maximize clarity on the tool/library itself.
+Workspace Root: Cargo.toml
+[workspace]
+members = [
+    "lab01_nom_parsing",
+    "lab02_id_registry",
+    "lab03_bit_manipulation",
+    "lab04_bytemuck_repr",
+    "lab05_rayon_parallelism",
+    "lab06_data_oriented_design",
+    "lab07_wgpu_basics",
+    "lab08_wgsl_compute",
+    "lab09_wasm_bindgen",
+    "lab10_gpu_atomics"
+]
+resolver = "2"
+
+Lab 01: String Processing with nom
+ * Tool: nom (Parser Combinators).
+ * Requirement: Implement a parser to extract words from a parenthesized Lisp-style string (e.g., (action arg1 arg2)).
+ * Constraint: Return Vec<&str> to demonstrate zero-copy slicing.
+ * Test Guidance: Test (move robot1 roomA) and (  spaced   input  ). Assert no extra whitespace in tokens.
+Lab 02: ID Registry & Interning
+ * Tool: std::collections::HashMap or indexmap.
+ * Requirement: Build a Registry struct that maps String names to u32 IDs.
+ * Constraint: Must provide a get_or_register(&mut self, name: &str) -> u32 method.
+ * Test Guidance: Ensure registering the same string twice returns the same ID.
+Lab 03: Bit-Vector World State
+ * Tool: Raw bitwise operators on [u64; 2] or the fixedbitset crate.
+ * Requirement: Implement a "World State" that tracks boolean facts via bit indices.
+ * Constraint: Implement a check_precondition(state, mask) -> bool and apply_effect(state, add, del) -> state.
+ * Test Guidance: Set bit 10 and 65. Verify check_precondition works across the u64 boundary.
+Lab 04: Memory Layout with bytemuck
+ * Tool: bytemuck.
+ * Requirement: Define a struct ActionData with #[repr(C)].
+ * Constraint: Derive Pod and Zeroable. Implement a function that casts the struct to &[u8].
+ * Test Guidance: Verify the byte-array size matches std::mem::size_of::<ActionData>().
+Lab 05: Data Parallelism with Rayon
+ * Tool: Rayon.
+ * Requirement: Process a large Vec<u32> (1M elements) by performing a complex bit-shift on each element.
+ * Constraint: Use .par_iter() and .map().
+ * Test Guidance: Assert the parallel result matches a standard serial .iter() result.
+Lab 06: Data-Oriented Design (Flat Trees)
+ * Tool: Slices and Indices.
+ * Requirement: Model a task hierarchy (Parent -> Subtasks) using a single flat Vec<u32>.
+ * Constraint: Store start_index and length in the Parent struct. No recursive pointers.
+ * Test Guidance: Given a parent index, successfully retrieve the subtask IDs using a slice &all_tasks[start..end].
+Lab 07: WebGPU Buffer Transfers
+ * Tool: wgpu.
+ * Requirement: Initialize a wgpu::Device. Create a Buffer and write an array of u32 to it.
+ * Constraint: Read the data back from the GPU using a mapping/staging buffer.
+ * Test Guidance: Assert the data read back is identical to the data sent.
+Lab 08: WGSL Logic Gate
+ * Tool: wgpu + WGSL.
+ * Requirement: Write a compute shader that performs a bitwise AND between two input buffers and writes to an output buffer.
+ * Constraint: Use #[repr(C)] structs for the uniform/storage data.
+ * Test Guidance: Pass 0b1010 and 0b1100. Assert the GPU returns 0b1000.
+Lab 09: WASM Linear Memory
+ * Tool: wasm-bindgen.
+ * Requirement: Export a Rust function that takes a js_sys::Uint32Array from JS and returns the count of set bits (popcount).
+ * Constraint: Avoid using serde or JSON; use direct typed array access.
+ * Test Guidance: Use wasm-pack test to verify popcount logic.
+Lab 10: GPU Atomic Search Frontier
+ * Tool: WGSL Atomics.
+ * Requirement: Write a shader where 1,000 threads attempt to write their ID to a "frontier" buffer.
+ * Constraint: Use atomicAdd to manage the write index to avoid race conditions.
+ * Test Guidance: Verify the final atomic counter equals 1,000 and the frontier has no "empty" gaps.
+Project Structure Instructions
+For each lab:
+ * Initialize as a library crate: cargo new lab_name --lib.
+ * Include a README.md explaining the tool used.
+ * Include src/lib.rs with the implementation.
+ * Include tests/integration_test.rs covering the requirements above.
+Next Step: Please initialize Lab 01 using the nom crate for S-expression parsing.
